@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Live-frågor</title>
+    <link rel="stylesheet" href="/overlay/overlay.css" />
+  </head>
+  <body>
+    <main id="stage">
+      <article id="card" class="card" hidden aria-live="polite">
+        <header class="card-top">
+          <span class="eyebrow" id="eyebrow">Fråga</span>
+          <span class="username" id="username"></span>
+        </header>
+        <p class="question" id="question"></p>
+        <div class="rule" aria-hidden="true"></div>
+        <p class="answer" id="answer"></p>
+      </article>
+    </main>
+    <p id="debug" class="debug" hidden></p>
+    <script src="/overlay/overlay.js"></script>
+  </body>
+</html>
