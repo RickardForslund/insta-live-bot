@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Simulator · insta-live-bot</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #12141a;
+        --panel: #1b1e27;
+        --ink: #f4f1ea;
+        --muted: #b7b1a6;
+        --line: rgba(244, 241, 234, 0.12);
+        --accent: #e7a84a;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', sans-serif;
+      }
+      main {
+        display: grid;
+        grid-template-columns: minmax(280px, 420px) 1fr;
+        min-height: 100vh;
+      }
+      form,
+      .preview {
+        padding: 28px;
+      }
+      form {
+        border-right: 1px solid var(--line);
+        background: var(--panel);
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: 28px;
+      }
+      p.lead {
+        margin: 0 0 22px;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+      label {
+        display: block;
+        margin-bottom: 6px;
+        color: var(--muted);
+        font-size: 13px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      input,
+      textarea {
+        width: 100%;
+        margin-bottom: 16px;
+        padding: 12px 14px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: #101218;
+        color: var(--ink);
+        font: inherit;
+      }
+      textarea {
+        min-height: 96px;
+        resize: vertical;
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      button {
+        border: 0;
+        border-radius: 999px;
+        padding: 10px 14px;
+        background: var(--accent);
+        color: #1a1206;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      button.ghost {
+        background: transparent;
+        color: var(--ink);
+        border: 1px solid var(--line);
+      }
+      pre {
+        margin: 22px 0 0;
+        padding: 14px;
+        overflow: auto;
+        border-radius: 12px;
+        background: #101218;
+        color: #d9d3c8;
+        font:
+          13px/1.45 ui-monospace,
+          monospace;
+        white-space: pre-wrap;
+      }
+      .preview {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        background: linear-gradient(160deg, rgba(231, 168, 74, 0.16), transparent 42%), #2a241c;
+      }
+      iframe {
+        flex: 1;
+        width: 100%;
+        min-height: 420px;
+        border: 0;
+        border-radius: 16px;
+        background: transparent;
+      }
+      a {
+        color: var(--accent);
+      }
+      @media (max-width: 860px) {
+        main {
+          grid-template-columns: 1fr;
+        }
+        form {
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <form id="form">
+        <h1>Simulator</h1>
+        <p class="lead">
+          Fejkar en Instagram Live-kommentar. Svaret dyker upp i förhandsvisningen, samma vy som OBS
+          Browser Source.
+        </p>
+        <label for="username">Användarnamn</label>
+        <input id="username" name="username" value="tittare" autocomplete="off" />
+        <label for="text">Kommentar</label>
+        <textarea id="text" name="text">!fråga Vad är huvudstaden i Sverige?</textarea>
+        <div class="row">
+          <button type="submit">Skicka</button>
+          <button class="ghost" type="button" data-text="!hjälp">!hjälp</button>
+          <button class="ghost" type="button" data-text="!hej">!hej</button>
+        </div>
+        <pre id="output">Väntar på en kommentar.</pre>
+      </form>
+      <section class="preview">
+        <p class="lead">
+          Overlay för OBS:
+          <a href="/overlay" target="_blank" rel="noreferrer">/overlay</a>
+          · placering:
+          <a href="/overlay?preview=1" target="_blank" rel="noreferrer">/overlay?preview=1</a>
+        </p>
+        <iframe title="Overlay-förhandsvisning" src="/overlay?debug=1&stage=1"></iframe>
+      </section>
+    </main>
+    <script>
+      const form = document.getElementById('form');
+      const output = document.getElementById('output');
+      const text = document.getElementById('text');
+      const username = document.getElementById('username');
+
+      async function send(comment) {
+        output.textContent = 'Skickar…';
+        try {
+          const response = await fetch('/dev/simulate', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+              username: username.value.trim() || 'simulator',
+              text: comment,
+            }),
+          });
+          const body = await response.json();
+          output.textContent = JSON.stringify(body, null, 2);
+        } catch (error) {
+          output.textContent = String(error);
+        }
+      }
+
+      form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        send(text.value);
+      });
+
+      for (const button of document.querySelectorAll('button[data-text]')) {
+        button.addEventListener('click', function () {
+          text.value = button.getAttribute('data-text');
+          send(text.value);
+        });
+      }
+    </script>
+  </body>
+</html>
